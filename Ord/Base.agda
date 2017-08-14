@@ -91,5 +91,24 @@ limit f ⊕ limit g =
       recʳ = limit λ j → limit f ⊕ g j
   in recˡ ⊔ recʳ
 
+
+_+_ : Ord → Ord → Ord
+x + limit f = x ⊔ limit λ i → x + f i
+
+_∙_ : Ord → Ord → Ord
+limit f ∙ limit g = limit λ { (i , j) → limit f ∙ g j + f i }
+
+_^_ : Ord → Ord → Ord
+limit f ^ limit g = suc zero ⊔ limit
+  λ { (i , j , k) →
+         let
+           γ = f i
+           δ = g j
+           aᵈ = limit f ^ δ
+           η = subord aᵈ k
+         in aᵈ ∙ γ + η }
+
 infixl 5 _⊔_ _⊓_
-infixl 6 _⊕_
+infixl 6 _+_ _⊕_
+infixl 7 _∙_
+infixr 8 _^_

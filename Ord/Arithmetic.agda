@@ -1,4 +1,4 @@
-module Ord.Unnat a where
+module Ord.Arithmetic a where
 
 open import Ord.Base a
 open import Function
@@ -12,26 +12,6 @@ open import Ord.Nat a
 open import Algebra.Structures
 open import Relation.Nullary
 open import Relation.Binary
-
-_+_ : Ord → Ord → Ord
-x + limit f = x ⊔ limit λ i → x + f i
-
-_∙_ : Ord → Ord → Ord
-limit f ∙ limit g = limit λ { (i , j) → limit f ∙ g j + f i }
-
-_^_ : Ord → Ord → Ord
-limit f ^ limit g = one ⊔ limit
-  λ { (i , j , k) →
-         let
-           γ = f i
-           δ = g j
-           aᵈ = limit f ^ δ
-           η = subord aᵈ k
-         in aᵈ ∙ γ + η }
-
-infixl 6 _+_
-infixl 7 _∙_
-infixr 8 _^_
 
 +-≤-cong : ∀ {x y u v} → x ≤ y → u ≤ v → x + u ≤ y + v
 +-≤-cong {limit _} {limit _} {limit _} {limit _} x≤y u≤v =

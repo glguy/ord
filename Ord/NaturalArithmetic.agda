@@ -1,4 +1,4 @@
-module Ord.ArithProp a where
+module Ord.NaturalArithmetic a where
 
 open import Level using (lift)
 open import Ord.Base a
