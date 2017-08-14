@@ -3,7 +3,8 @@ module Ord.Nat a where
 open import Level using (lower; lift)
 open import Ord.Base a
 open import Ord.RelProp a
-open import Data.Nat using (fold; ℕ; z≤n; s≤s) renaming (_≤_ to _ℕ-≤_; _<_ to _ℕ-<_)
+open import Data.Nat using (ℕ; z≤n; s≤s) renaming (_≤_ to _ℕ-≤_; _<_ to _ℕ-<_)
+open import Data.Nat.GeneralisedArithmetic using (fold)
 open import Function
 open import Data.Product
 

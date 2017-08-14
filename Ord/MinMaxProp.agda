@@ -12,10 +12,10 @@ open import Algebra
 
 ------------------------------------------------------------------------
 
-⊔-≤-cong : Congruent₂ _≤_ _⊔_
-⊔-≤-cong {limit _} {limit _} {limit _} {limit _} x≤y u≤v (inj₁ i)
+⊔-mono-≤ : _⊔_ Preserves₂ _≤_ ⟶ _≤_ ⟶ _≤_
+⊔-mono-≤ {limit _} {limit _} {limit _} {limit _} x≤y u≤v (inj₁ i)
   = let j , xi≤yj = x≤y i in inj₁ j , xi≤yj
-⊔-≤-cong {limit _} {limit _} {limit _} {limit _} x≤y u≤v (inj₂ i)
+⊔-mono-≤ {limit _} {limit _} {limit _} {limit _} x≤y u≤v (inj₂ i)
   = let j , ui≤vj = u≤v i in inj₂ j , ui≤vj
 
 ⊔-isIdempotentCommutativeMonoid : IsIdempotentCommutativeMonoid _≈_ _⊔_ zero
@@ -45,7 +45,7 @@ IsSemigroup.∙-cong
   (IsCommutativeMonoid.isSemigroup
      (IsIdempotentCommutativeMonoid.isCommutativeMonoid
        ⊔-isIdempotentCommutativeMonoid))
-  (x≤y , y≤x) (u≤v , v≤u) = ⊔-≤-cong x≤y u≤v , ⊔-≤-cong y≤x v≤u
+  (x≤y , y≤x) (u≤v , v≤u) = ⊔-mono-≤ x≤y u≤v , ⊔-mono-≤ y≤x v≤u
 
 IsCommutativeMonoid.identityˡ
   (IsIdempotentCommutativeMonoid.isCommutativeMonoid
@@ -114,12 +114,12 @@ IsIdempotentCommutativeMonoid.idem
     lem₂ : Idempotent _≥_ _⊓_
     lem₂ (limit f) i = (i , i) , lem₂ (f i)
 
-≤-⊓-cong : Congruent₂ _≤_ _⊓_
-≤-⊓-cong {limit _} {limit _} {limit _} {limit _}
+⊓-mono-≤ : _⊓_ Preserves₂ _≤_ ⟶ _≤_ ⟶ _≤_
+⊓-mono-≤ {limit _} {limit _} {limit _} {limit _}
   x≤y u≤v (i , j) =
     let a , b = x≤y i
         c , d = u≤v j
-    in (a , c) , ≤-⊓-cong b d
+    in (a , c) , ⊓-mono-≤ b d
 
 ------------------------------------------------------------------------
 
@@ -161,7 +161,7 @@ IsSemigroup.assoc ⊓-isSemigroup x y z = lem₁ x y z , lem₂ x y z
       = ((i , j) , k) , lem₂ (f i) (g j) (h k)
 
 IsSemigroup.∙-cong ⊓-isSemigroup (x≤y , x≥y) (u≤v , u≥v)
-  = ≤-⊓-cong x≤y u≤v , ≤-⊓-cong x≥y u≥v
+  = ⊓-mono-≤ x≤y u≤v , ⊓-mono-≤ x≥y u≥v
 
 
 ------------------------------------------------------------------------

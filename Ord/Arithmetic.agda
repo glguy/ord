@@ -13,15 +13,15 @@ open import Algebra.Structures
 open import Relation.Nullary
 open import Relation.Binary
 
-+-≤-cong : ∀ {x y u v} → x ≤ y → u ≤ v → x + u ≤ y + v
-+-≤-cong {limit _} {limit _} {limit _} {limit _} x≤y u≤v =
-  ⊔-≤-cong x≤y (λ i → (proj₁ (u≤v i)) , +-≤-cong x≤y (proj₂ (u≤v i)))
++-mono-≤ : _+_ Preserves₂ _≤_ ⟶ _≤_ ⟶ _≤_
++-mono-≤ {limit _} {limit _} {limit _} {limit _} x≤y u≤v =
+  ⊔-mono-≤ x≤y (λ i → (proj₁ (u≤v i)) , +-mono-≤ x≤y (proj₂ (u≤v i)))
 
-∙-≤-cong : ∀ {x y u v} → x ≤ y → u ≤ v → x ∙ u ≤ y ∙ v
-∙-≤-cong {limit e} {limit f} {limit g} {limit h} x≤y u≤v (i , j) =
+∙-mono-≤ : _∙_ Preserves₂ _≤_ ⟶ _≤_ ⟶ _≤_
+∙-mono-≤ {limit e} {limit f} {limit g} {limit h} x≤y u≤v (i , j) =
   let a , ei≤fa = x≤y i
       c , gj≤hc = u≤v j
-  in (a , c) , +-≤-cong (∙-≤-cong x≤y gj≤hc) ei≤fa
+  in (a , c) , +-mono-≤ (∙-mono-≤ x≤y gj≤hc) ei≤fa
 
 
 +-isMonoid : IsMonoid _≈_ _+_ zero
@@ -42,7 +42,7 @@ IsSemigroup.assoc (IsMonoid.isSemigroup +-isMonoid) α β γ = lem₁ α β γ ,
 
 
 IsSemigroup.∙-cong (IsMonoid.isSemigroup +-isMonoid)
-  (x≤y , y≤x) (u≤v , v≤u) = +-≤-cong x≤y u≤v , +-≤-cong y≤x v≤u
+  (x≤y , y≤x) (u≤v , v≤u) = +-mono-≤ x≤y u≤v , +-mono-≤ y≤x v≤u
 
 IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
   where
@@ -65,9 +65,9 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
         lem₂ x@(limit f) i = (inj₂ i) , (lem₂ (f i))
 
 
-+-≤-<-cong : ∀ {β₁ β₂ γ₁ γ₂} → β₁ ≤ β₂ → γ₁ < γ₂ → β₁ + γ₁ < β₂ + γ₂
-+-≤-<-cong {β₁@(limit g₁)} {β₂@(limit g₂)} {limit h₁} {limit h₂} β₁≤β₂ (j , h₁_<h₂j) =
-  let rec = λ x → +-≤-<-cong β₁≤β₂ (h₁ x <h₂j)
++-≤-<-mono : _+_ Preserves₂ _≤_ ⟶ _<_ ⟶ _<_
++-≤-<-mono {β₁@(limit g₁)} {β₂@(limit g₂)} {limit h₁} {limit h₂} β₁≤β₂ (j , h₁_<h₂j) =
+  let rec = λ x → +-≤-<-mono β₁≤β₂ (h₁ x <h₂j)
   in inj₂ j , [ lem , rec ]
   where
     open import Relation.Binary.PartialOrderReasoning ≤-poset
@@ -75,7 +75,7 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
 
     lem : β₁ ≤ β₂ + h₂ j
     lem = begin β₁ ≤⟨ proj₂ (proj₂ identity β₁) ⟩
-                 β₁ + zero ≤⟨ +-≤-cong β₁≤β₂ (zero-least (h₂ j)) ⟩
+                 β₁ + zero ≤⟨ +-mono-≤ β₁≤β₂ (zero-least (h₂ j)) ⟩
                  β₂ + h₂ j ∎
 
 
@@ -85,7 +85,7 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
     lem₁ : ∀ α β γ → α ∙ (β + γ) ≤ α ∙ β + α ∙ γ
     lem₁ (limit f) (limit g) (limit h) (i , inj₁ j) = (inj₁ (i , j)) , (ord-le-refl _)
     lem₁ x@(limit f) y@(limit g) z@(limit h) (i , inj₂ j) = (inj₂ (i , j)) ,
-       (begin x ∙ (y + h j) + f i ≤⟨ +-≤-cong (lem₁ x y (h j)) (ord-le-refl (f i)) ⟩
+       (begin x ∙ (y + h j) + f i ≤⟨ +-mono-≤ (lem₁ x y (h j)) (ord-le-refl (f i)) ⟩
               x ∙ y + x ∙ h j + f i ≤⟨ proj₁ (assoc (x ∙ y) (x ∙ h j) (f i)) ⟩
               x ∙ y + (x ∙ h j + f i) ∎)
       where
@@ -96,7 +96,7 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
     lem₂ (limit f) (limit g) (limit h) (inj₁ (i , j)) = (i , inj₁ j) , (ord-le-refl _)
     lem₂ α@(limit f) β@(limit g) γ@(limit h) (inj₂ (i , j)) = (i , inj₂ j) ,
        (begin α ∙ β + (α ∙ h j + f i) ≤⟨ proj₂ (assoc (α ∙ β) (α ∙ h j) (f i)) ⟩
-              α ∙ β + α ∙ h j + f i ≤⟨ +-≤-cong (lem₂ α β (h j)) (ord-le-refl (f i))  ⟩
+              α ∙ β + α ∙ h j + f i ≤⟨ +-mono-≤ (lem₂ α β (h j)) (ord-le-refl (f i))  ⟩
               α ∙ (β + h j) + f i ∎)
       where
         open IsMonoid +-isMonoid
@@ -128,7 +128,7 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
     counter₂ : ω < ω + one
     counter₂ = from-inj₁
              $ begin ω        ≈⟨ Setoid.sym ≈-setoid (proj₂ identity ω) ⟩
-                     ω + zero <⟨ +-≤-<-cong (ord-le-refl ω) 0<1 ⟩
+                     ω + zero <⟨ +-≤-<-mono (ord-le-refl ω) 0<1 ⟩
                      ω + one ∎
       where
         open IsMonoid +-isMonoid
@@ -147,10 +147,10 @@ IsSemigroup.assoc         (IsMonoid.isSemigroup ∙-isMonoid)
     lem₁ : ∀ α β γ → (α ∙ β) ∙ γ ≤ α ∙ (β ∙ γ)
 
     lem₁ α@(limit f) β@(limit g) γ@(limit h) ((i , j) , k) = (i , j , k) ,
-          (begin α ∙  β ∙ h k  + (α ∙ g j + f i) ≤⟨ +-≤-cong (lem₁ α β (h k)) (ord-le-refl (α ∙ g j + f i)) ⟩
+          (begin α ∙  β ∙ h k  + (α ∙ g j + f i) ≤⟨ +-mono-≤ (lem₁ α β (h k)) (ord-le-refl (α ∙ g j + f i)) ⟩
                  α ∙ (β ∙ h k) + (α ∙ g j + f i) ≤⟨ proj₂ (assoc (α ∙ (β ∙ h k)) (α ∙ g j) (f i)) ⟩
               α ∙ (β ∙ h k) + α ∙ g j + f i
-                  ≤⟨ +-≤-cong ( proj₂ (+-∙-dist α (β ∙ h k) (g j))  ) (ord-le-refl (f i)) ⟩
+                  ≤⟨ +-mono-≤ ( proj₂ (+-∙-dist α (β ∙ h k) (g j))  ) (ord-le-refl (f i)) ⟩
               α ∙ (β ∙ h k + g j) + f i ∎)
      where
        open import Relation.Binary.PartialOrderReasoning ≤-poset
@@ -158,9 +158,9 @@ IsSemigroup.assoc         (IsMonoid.isSemigroup ∙-isMonoid)
 
     lem₂ : ∀ α β γ → (α ∙ β) ∙ γ ≥ α ∙ (β ∙ γ)
     lem₂ α@(limit f) β@(limit g) γ@(limit h) (i , j , k) = ((i , j) , k) ,
-       (begin α ∙ (β ∙ h k + g j) + f i ≤⟨ +-≤-cong (proj₁ (+-∙-dist α (β ∙ h k) (g j))) (ord-le-refl (f i)) ⟩
+       (begin α ∙ (β ∙ h k + g j) + f i ≤⟨ +-mono-≤ (proj₁ (+-∙-dist α (β ∙ h k) (g j))) (ord-le-refl (f i)) ⟩
               α ∙ (β ∙ h k) + α ∙ g j + f i ≤⟨ proj₁ (assoc (α ∙ (β ∙ h k)) (α ∙ g j) (f i)) ⟩
-              α ∙ (β ∙ h k) + (α ∙ g j + f i) ≤⟨ +-≤-cong (lem₂ α β (h k)) (ord-le-refl (α ∙ g j + f i)) ⟩
+              α ∙ (β ∙ h k) + (α ∙ g j + f i) ≤⟨ +-mono-≤ (lem₂ α β (h k)) (ord-le-refl (α ∙ g j + f i)) ⟩
               α ∙ β ∙ h k + (α ∙ g j + f i) ∎)
      where
        open import Relation.Binary.PartialOrderReasoning ≤-poset
@@ -168,7 +168,7 @@ IsSemigroup.assoc         (IsMonoid.isSemigroup ∙-isMonoid)
 
 
 IsSemigroup.∙-cong (IsMonoid.isSemigroup ∙-isMonoid)
-  (x≤y , y≤x) (u≤v , v≤u) = ∙-≤-cong x≤y u≤v , ∙-≤-cong y≤x v≤u
+  (x≤y , y≤x) (u≤v , v≤u) = ∙-mono-≤ x≤y u≤v , ∙-mono-≤ y≤x v≤u
 
 IsMonoid.identity ∙-isMonoid = (λ α → lem₁ α , lem₂ α) , (λ α → lem₃ α , lem₄ α)
   where
@@ -190,14 +190,14 @@ IsMonoid.identity ∙-isMonoid = (λ α → lem₁ α , lem₂ α) , (λ α → 
 
     lem₃ : ∀ α → α ∙ one ≤ α
     lem₃ α@(limit f) (i , _) = i ,
-       (begin α ∙ zero + f i ≤⟨ +-≤-cong (∙-zeroʳ α) (ord-le-refl (f i)) ⟩
+       (begin α ∙ zero + f i ≤⟨ +-mono-≤ (∙-zeroʳ α) (ord-le-refl (f i)) ⟩
               zero + f i ≤⟨ proj₁ (proj₁ identity (f i)) ⟩
               f i ∎)
 
     lem₄ : ∀ α → α ∙ one ≥ α
     lem₄ α@(limit f) i = (i , _) ,
        (begin f i ≤⟨ proj₂ (proj₁ identity (f i)) ⟩
-              zero + f i ≤⟨ +-≤-cong (zero-least (α ∙ zero)) (ord-le-refl (f i)) ⟩ α ∙ zero + f i ∎)
+              zero + f i ≤⟨ +-mono-≤ (zero-least (α ∙ zero)) (ord-le-refl (f i)) ⟩ α ∙ zero + f i ∎)
 
 
 
@@ -237,6 +237,6 @@ lex₂ α@(limit f) β₁@(limit g₁) β₂@(limit g₂) γ₁@(limit h₁) γ�
      in inj₂ j , [ uncurry rec₁ , rec₂ ]
 
 
-∙-<-cong : ∀ {α β γ} → zero < α → β < γ → α ∙ β < α ∙ γ
-∙-<-cong {limit f} {limit g} {limit h} (i , _) (j , g_≤hj) =
+∙-<-mono : ∀ {α β γ} → zero < α → β < γ → α ∙ β < α ∙ γ
+∙-<-mono {limit f} {limit g} {limit h} (i , _) (j , g_≤hj) =
   (i , j) , (λ { (a , b) → lex₁ (limit f) (g b) (h j) (f a) (f i) (g b ≤hj) (simple f a) })
