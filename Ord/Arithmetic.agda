@@ -4,6 +4,7 @@ open import Ord.Base a
 open import Function
 open import Level using (lower; lift)
 open import Ord.RelProp a
+open import Ord.Pred a
 open import Data.Product
 open import Data.Sum
 open import Data.Empty
@@ -53,9 +54,9 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
        limit-cong
          (mk-left-inverse [ id , ⊥-elim ∘ lower ] inj₁
                           [ (λ _ → _≡_.refl) , ⊥-elim ∘ lower ])
-             (λ i → reflexive _≡_.refl)
+             (λ i → refl)
       where
-        open Setoid ≈-setoid using (reflexive)
+        open Setoid ≈-setoid using (refl)
 
     +-identityˡ : ∀ x → zero + x ≈ x
     +-identityˡ x = lem₁ x , lem₂ x
@@ -84,10 +85,10 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
 +-∙-dist : ∀ α β γ → α ∙ (β + γ) ≈ α ∙ β + α ∙ γ
 +-∙-dist α@(limit {A} f) β@(limit {B} g) γ@(limit {C} h) =
   limit-cong inv λ
-  { (inj₁ (i , j)) → reflexive _≡_.refl
+  { (inj₁ (i , j)) → refl
   ; (inj₂ (i , j)) →
      begin
-       α ∙ (β + h j) + f i ≈⟨ ∙-cong (+-∙-dist α β (h j)) (reflexive {f i} _≡_.refl) ⟩
+       α ∙ (β + h j) + f i ≈⟨ ∙-cong (+-∙-dist α β (h j)) (refl {f i}) ⟩
        α ∙ β + α ∙ h j + f i ≈⟨ assoc (α ∙ β) (α ∙ h j) (f i) ⟩
        α ∙ β + (α ∙ h j + f i) ∎ }
   where
@@ -155,11 +156,11 @@ IsSemigroup.assoc         (IsMonoid.isSemigroup ∙-isMonoid) = self
           λ { (i , j , k) → begin
 
      α ∙  β ∙ h k  + (α ∙ g j + f i)
-        ≈⟨ ∙-cong (self α β (h k)) (reflexive {(α ∙ g j + f i) } _≡_.refl) ⟩
+        ≈⟨ ∙-cong (self α β (h k)) (refl {(α ∙ g j + f i) }) ⟩
      α ∙ (β ∙ h k) + (α ∙ g j + f i)
         ≈⟨ sym (assoc (α ∙ (β ∙ h k)) (α ∙ g j) (f i)) ⟩
      α ∙ (β ∙ h k) + α ∙ g j + f i
-        ≈⟨ ∙-cong (sym (+-∙-dist α (β ∙ h k) (g j))) (reflexive {f i} _≡_.refl) ⟩
+        ≈⟨ ∙-cong (sym (+-∙-dist α (β ∙ h k) (g j))) (refl {f i}) ⟩
      α ∙ (β ∙ h k + g j) + f i ∎ }
 
 
@@ -240,7 +241,10 @@ open import Data.Nat using (ℕ) renaming (_+_ to _ℕ-+_)
     open IsMonoid +-isMonoid
 
 suc-cong : ∀ {α β} → α ≈ β → suc α ≈ suc β
-suc-cong eq = (λ i → , proj₁ eq) , (λ _ → , proj₂ eq)
+suc-cong (x , y) = (λ _ → , x) , (λ _ → , y)
+
+suc-mono : ∀ {α β} → α ≤ β → α < suc β
+suc-mono α≤β = , α≤β
 
 add : ∀ i j → ⌜ i ℕ-+ j ⌝ ≈ ⌜ i ⌝ + ⌜ j ⌝
 add x ℕ.zero = begin
@@ -275,3 +279,4 @@ add x (ℕ.suc y) =
     open IsMonoid +-isMonoid
 ω-dominates (ℕ.suc i) (inj₁ _) = lift i , ord-le-refl _
 ω-dominates (ℕ.suc i) (inj₂ (lift j)) = lift (ℕ.suc i ℕ-+ j) , proj₂ (add (ℕ.suc i) j)
+

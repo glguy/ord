@@ -9,6 +9,8 @@ open import Relation.Binary
 open import Algebra.FunctionProperties
 open import Algebra.Structures
 open import Algebra
+open import Inverses
+open import Function.Inverse
 
 ------------------------------------------------------------------------
 
@@ -18,8 +20,11 @@ open import Algebra
 ⊔-mono-≤ {limit _} {limit _} {limit _} {limit _} x≤y u≤v (inj₂ i)
   = let j , ui≤vj = u≤v i in inj₂ j , ui≤vj
 
+⊔-max : ∀ α β → β ≤ α ⊔ β
+⊔-max (limit f) (limit g) i = inj₂ i , ord-le-refl _
+
 ⊔-pick : ∀ {α β} → α ≤ β → α ⊔ β ≈ β
-⊔-pick {limit f} {limit g} le = [ (λ x → le x) , (λ x → x , (ord-le-refl _)) ] , (λ i → (inj₂ i) , (ord-le-refl _))
+⊔-pick {limit f} {limit g} le = [ (λ x → le x) , (λ x → x , (ord-le-refl _)) ] , ⊔-max (limit f) (limit g)
 
 ⊔-isIdempotentCommutativeMonoid : IsIdempotentCommutativeMonoid _≈_ _⊔_ zero
 
@@ -33,16 +38,14 @@ IsSemigroup.assoc
   (IsCommutativeMonoid.isSemigroup
     (IsIdempotentCommutativeMonoid.isCommutativeMonoid
        ⊔-isIdempotentCommutativeMonoid))
-  x y z = lem₁ x y z , lem₂ x y z
+  (limit f) (limit g) (limit h) =
+    limit-cong (left-inverse ⊎-assoc) [ ref f , [ ref g , ref h ] ]
   where
-    lem₁ : Associative _≤_ _⊔_
-    lem₁ (limit f) (limit g) (limit h) (inj₁ (inj₁ i)) = inj₁ i        , ord-le-refl (f i)
-    lem₁ (limit f) (limit g) (limit h) (inj₁ (inj₂ j)) = inj₂ (inj₁ j) , ord-le-refl (g j)
-    lem₁ (limit f) (limit g) (limit h) (inj₂ k)        = inj₂ (inj₂ k) , ord-le-refl (h k)
-    lem₂ : Associative _≥_ _⊔_
-    lem₂ (limit f) (limit g) (limit h) (inj₁ i)        = inj₁ (inj₁ i) , ord-le-refl (f i)
-    lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₁ j)) = inj₁ (inj₂ j) , ord-le-refl (g j)
-    lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₂ k)) = inj₂ k        , ord-le-refl (h k)
+    open Inverse
+    open Setoid ≈-setoid using (refl)
+
+    ref : ∀ {A : Set a} (f : A → Ord) x → f x ≈ f x
+    ref f x = refl
 
 IsSemigroup.∙-cong
   (IsCommutativeMonoid.isSemigroup
@@ -71,16 +74,8 @@ IsCommutativeMonoid.comm
     lem (limit f) (limit g) (inj₁ i) = inj₂ i , ord-le-refl (f i)
     lem (limit f) (limit g) (inj₂ i) = inj₁ i , ord-le-refl (g i)
 
-IsIdempotentCommutativeMonoid.idem
-  ⊔-isIdempotentCommutativeMonoid
-  x = lem₁ x , lem₂ x
-  where
-    lem₁ : ∀ x → x ⊔ x ≤ x
-    lem₁ (limit f) (inj₁ i) = i , ord-le-refl (f i)
-    lem₁ (limit f) (inj₂ i) = i , ord-le-refl (f i)
-
-    lem₂ : ∀ x → x ⊔ x ≥ x
-    lem₂ (limit f) i = inj₁ i , ord-le-refl (f i)
+IsIdempotentCommutativeMonoid.idem ⊔-isIdempotentCommutativeMonoid
+  x = ⊔-pick (ord-le-refl x)
 
 ------------------------------------------------------------------------
 
@@ -90,32 +85,24 @@ IsIdempotentCommutativeMonoid.idem
     lem : Commutative _≤_ _⊓_
     lem (limit f) (limit g) (i , j) = (j , i) , lem (f i) (g j)
 
+
 ⊓-min : ∀ x y → x ⊓ y ≤ x
 ⊓-min (limit f) (limit g) (i , j) = i , ⊓-min (f i) (g j)
 
-⊓-largest : ∀ x y z → z ≤ x → z ≤ y → z ≤ x ⊓ y
-⊓-largest (limit f) (limit g) (limit h) z≤x z≤y i =
-  let a , b = z≤x i
-      c , d = z≤y i
-  in , ⊓-largest _ _ _ b d
+⊓-pick : ∀ {α β} → α ≤ β → α ⊓ β ≈ α
+⊓-pick α≤β = ⊓-min _ _ , lem α≤β
+  where
+    lem : ∀ {α β} → α ≤ β → α ⊓ β ≥ α
+    lem {α@(limit f)} {β@(limit g)} α≤β i =
+      let x , y = α≤β i
+      in (i , x) , lem y
+
 
 ⊓-leftZero : LeftZero _≈_ zero _⊓_
-⊓-leftZero x = lem₁ x , lem₂ x
-  where
-    lem₁ : LeftZero _≤_ zero _⊓_
-    lem₁ (limit f) (lift () , _)
-
-    lem₂ : LeftZero _≥_ zero _⊓_
-    lem₂ (limit f) (lift ())
+⊓-leftZero x = ⊓-pick (zero-least x)
 
 ⊓-idem : Idempotent _≈_ _⊓_
-⊓-idem x = lem₁ x , lem₂ x
-  where
-    lem₁ : Idempotent _≤_ _⊓_
-    lem₁ x = ⊓-min x x
-
-    lem₂ : Idempotent _≥_ _⊓_
-    lem₂ (limit f) i = (i , i) , lem₂ (f i)
+⊓-idem x = ⊓-pick (ord-le-refl x)
 
 ⊓-mono-≤ : _⊓_ Preserves₂ _≤_ ⟶ _≤_ ⟶ _≤_
 ⊓-mono-≤ {limit _} {limit _} {limit _} {limit _}
@@ -202,8 +189,11 @@ IsSemiringWithoutOne.distrib ⊔-⊓-isSemiringWithoutOne =
   where
     open import Relation.Binary.EqReasoning ≈-setoid
 
-IsSemiringWithoutOne.zero ⊔-⊓-isSemiringWithoutOne = ⊓-leftZero ,
-  (λ x → begin x ⊓ zero ≈⟨ ⊓-comm _ _ ⟩ zero ⊓ x ≈⟨ ⊓-leftZero _ ⟩ zero ∎)
+IsSemiringWithoutOne.zero ⊔-⊓-isSemiringWithoutOne =
+  ⊓-leftZero ,
+  λ x → begin x ⊓ zero ≈⟨ ⊓-comm _ _ ⟩
+              zero ⊓ x ≈⟨ ⊓-leftZero _ ⟩
+              zero ∎
   where
     open import Relation.Binary.EqReasoning ≈-setoid
 
