@@ -18,6 +18,9 @@ open import Algebra
 ⊔-mono-≤ {limit _} {limit _} {limit _} {limit _} x≤y u≤v (inj₂ i)
   = let j , ui≤vj = u≤v i in inj₂ j , ui≤vj
 
+⊔-pick : ∀ {α β} → α ≤ β → α ⊔ β ≈ β
+⊔-pick {limit f} {limit g} le = [ (λ x → le x) , (λ x → x , (ord-le-refl _)) ] , (λ i → (inj₂ i) , (ord-le-refl _))
+
 ⊔-isIdempotentCommutativeMonoid : IsIdempotentCommutativeMonoid _≈_ _⊔_ zero
 
 IsSemigroup.isEquivalence

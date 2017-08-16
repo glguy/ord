@@ -10,8 +10,10 @@ open import Data.Empty
 open import Ord.MinMaxProp a
 open import Ord.Nat a
 open import Algebra.Structures
+open import Algebra.FunctionProperties
 open import Relation.Nullary
 open import Relation.Binary
+open import Relation.Binary.PropositionalEquality using (_≡_)
 
 +-mono-≤ : _+_ Preserves₂ _≤_ ⟶ _≤_ ⟶ _≤_
 +-mono-≤ {limit _} {limit _} {limit _} {limit _} x≤y u≤v =
@@ -31,14 +33,14 @@ IsSemigroup.isEquivalence (IsMonoid.isSemigroup +-isMonoid) = ≈-isEquivalence
 IsSemigroup.assoc (IsMonoid.isSemigroup +-isMonoid) α β γ = lem₁ α β γ , lem₂ α β γ
   where
     lem₁ : ∀ α β γ → (α + β) + γ ≤ α + (β + γ)
-    lem₁ (limit f) (limit g) (limit h) (inj₁ (inj₁ i)) = (inj₁ i) , (ord-le-refl _)
-    lem₁ (limit f) (limit g) (limit h) (inj₁ (inj₂ i)) = (inj₂ (inj₁ i)) , (ord-le-refl _)
-    lem₁ (limit f) (limit g) (limit h) (inj₂ i) = (inj₂ (inj₂ i)) , lem₁ _ _ (h i)
+    lem₁ (limit f) (limit g) (limit h) (inj₁ (inj₁ i)) = inj₁ i , ord-le-refl _
+    lem₁ (limit f) (limit g) (limit h) (inj₁ (inj₂ i)) = inj₂ (inj₁ i) , ord-le-refl _
+    lem₁ (limit f) (limit g) (limit h) (inj₂ i) = inj₂ (inj₂ i) , lem₁ _ _ (h i)
 
     lem₂ : ∀ α β γ → (α + β) + γ ≥ α + (β + γ)
-    lem₂ (limit f) (limit g) (limit h) (inj₁ i) = (inj₁ (inj₁ i)) , (ord-le-refl _)
-    lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₁ i)) = (inj₁ (inj₂ i)) , (ord-le-refl _)
-    lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₂ i)) = (inj₂ i) , lem₂ _ _ (h i)
+    lem₂ (limit f) (limit g) (limit h) (inj₁ i) = inj₁ (inj₁ i) , ord-le-refl _
+    lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₁ i)) = inj₁ (inj₂ i) , ord-le-refl _
+    lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₂ i)) = inj₂ i , lem₂ _ _ (h i)
 
 
 IsSemigroup.∙-cong (IsMonoid.isSemigroup +-isMonoid)
@@ -47,13 +49,13 @@ IsSemigroup.∙-cong (IsMonoid.isSemigroup +-isMonoid)
 IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
   where
     +-identityʳ : ∀ x → x + zero ≈ x
-    +-identityʳ x = lem₁ x , lem₂ x
+    +-identityʳ x@(limit f) =
+       limit-cong
+         (mk-left-inverse [ id , ⊥-elim ∘ lower ] inj₁
+                          [ (λ _ → _≡_.refl) , ⊥-elim ∘ lower ])
+             (λ i → reflexive _≡_.refl)
       where
-        lem₁ : ∀ x → x + zero ≤ x
-        lem₁ x@(limit f) (inj₁ i) = i , (ord-le-refl _)
-        lem₁ x@(limit f) (inj₂ (lift ()))
-        lem₂ : ∀ x → x + zero ≥ x
-        lem₂ x@(limit f) i = (inj₁ i) , (ord-le-refl _)
+        open Setoid ≈-setoid using (reflexive)
 
     +-identityˡ : ∀ x → zero + x ≈ x
     +-identityˡ x = lem₁ x , lem₂ x
@@ -80,28 +82,26 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
 
 
 +-∙-dist : ∀ α β γ → α ∙ (β + γ) ≈ α ∙ β + α ∙ γ
-+-∙-dist α β γ = lem₁ α β γ , lem₂ α β γ
++-∙-dist α@(limit {A} f) β@(limit {B} g) γ@(limit {C} h) =
+  limit-cong inv λ
+  { (inj₁ (i , j)) → reflexive _≡_.refl
+  ; (inj₂ (i , j)) →
+     begin
+       α ∙ (β + h j) + f i ≈⟨ ∙-cong (+-∙-dist α β (h j)) (reflexive {f i} _≡_.refl) ⟩
+       α ∙ β + α ∙ h j + f i ≈⟨ assoc (α ∙ β) (α ∙ h j) (f i) ⟩
+       α ∙ β + (α ∙ h j + f i) ∎ }
   where
-    lem₁ : ∀ α β γ → α ∙ (β + γ) ≤ α ∙ β + α ∙ γ
-    lem₁ (limit f) (limit g) (limit h) (i , inj₁ j) = (inj₁ (i , j)) , (ord-le-refl _)
-    lem₁ x@(limit f) y@(limit g) z@(limit h) (i , inj₂ j) = (inj₂ (i , j)) ,
-       (begin x ∙ (y + h j) + f i ≤⟨ +-mono-≤ (lem₁ x y (h j)) (ord-le-refl (f i)) ⟩
-              x ∙ y + x ∙ h j + f i ≤⟨ proj₁ (assoc (x ∙ y) (x ∙ h j) (f i)) ⟩
-              x ∙ y + (x ∙ h j + f i) ∎)
-      where
-        open import Relation.Binary.PartialOrderReasoning ≤-poset
-        open IsMonoid +-isMonoid
+    open import Function.LeftInverse using (_↞_)
+    open import Relation.Binary.EqReasoning ≈-setoid
+    open IsMonoid +-isMonoid
 
-    lem₂ : ∀ α β γ → α ∙ (β + γ) ≥ α ∙ β + α ∙ γ
-    lem₂ (limit f) (limit g) (limit h) (inj₁ (i , j)) = (i , inj₁ j) , (ord-le-refl _)
-    lem₂ α@(limit f) β@(limit g) γ@(limit h) (inj₂ (i , j)) = (i , inj₂ j) ,
-       (begin α ∙ β + (α ∙ h j + f i) ≤⟨ proj₂ (assoc (α ∙ β) (α ∙ h j) (f i)) ⟩
-              α ∙ β + α ∙ h j + f i ≤⟨ +-mono-≤ (lem₂ α β (h j)) (ord-le-refl (f i))  ⟩
-              α ∙ (β + h j) + f i ∎)
-      where
-        open IsMonoid +-isMonoid
-        open import Relation.Binary.PartialOrderReasoning ≤-poset
-
+    inv : (A × (B ⊎ C)) ↞ (A × B ⊎ A × C)
+    inv = mk-left-inverse (λ { (i , inj₁ j) → inj₁ (i , j)
+                             ; (i , inj₂ j) → inj₂ (i , j) })
+                          (λ { (inj₁ (i , j)) → (i , inj₁ j)
+                             ; (inj₂ (i , j)) → (i , inj₂ j) })
+                          (λ { (i , inj₁ j) → _≡_.refl
+                             ; (i , inj₂ j) → _≡_.refl })
 
 
 ¬‿+-comm : ∃₂ λ α β → α + β ≰ β + α
@@ -141,30 +141,26 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
 
 ∙-isMonoid : IsMonoid _≈_ _∙_ one
 IsSemigroup.isEquivalence (IsMonoid.isSemigroup ∙-isMonoid) = ≈-isEquivalence
-IsSemigroup.assoc         (IsMonoid.isSemigroup ∙-isMonoid)
-  α β γ = lem₁ α β γ , lem₂ α β γ
+IsSemigroup.assoc         (IsMonoid.isSemigroup ∙-isMonoid) = self
   where
-    lem₁ : ∀ α β γ → (α ∙ β) ∙ γ ≤ α ∙ (β ∙ γ)
+    open import Relation.Binary.EqReasoning ≈-setoid
+    open IsMonoid +-isMonoid
 
-    lem₁ α@(limit f) β@(limit g) γ@(limit h) ((i , j) , k) = (i , j , k) ,
-          (begin α ∙  β ∙ h k  + (α ∙ g j + f i) ≤⟨ +-mono-≤ (lem₁ α β (h k)) (ord-le-refl (α ∙ g j + f i)) ⟩
-                 α ∙ (β ∙ h k) + (α ∙ g j + f i) ≤⟨ proj₂ (assoc (α ∙ (β ∙ h k)) (α ∙ g j) (f i)) ⟩
-              α ∙ (β ∙ h k) + α ∙ g j + f i
-                  ≤⟨ +-mono-≤ ( proj₂ (+-∙-dist α (β ∙ h k) (g j))  ) (ord-le-refl (f i)) ⟩
-              α ∙ (β ∙ h k + g j) + f i ∎)
-     where
-       open import Relation.Binary.PartialOrderReasoning ≤-poset
-       open IsMonoid +-isMonoid
+    self : Associative _≈_ _∙_
+    self α@(limit f) β@(limit g) γ@(limit h)  =
+      limit-cong (mk-left-inverse
+                 (λ { ((i , j) , k) → i , j , k })
+                 (λ { (i , j , k) → ((i , j) , k)})
+                 (λ _ → _≡_.refl))
+          λ { (i , j , k) → begin
 
-    lem₂ : ∀ α β γ → (α ∙ β) ∙ γ ≥ α ∙ (β ∙ γ)
-    lem₂ α@(limit f) β@(limit g) γ@(limit h) (i , j , k) = ((i , j) , k) ,
-       (begin α ∙ (β ∙ h k + g j) + f i ≤⟨ +-mono-≤ (proj₁ (+-∙-dist α (β ∙ h k) (g j))) (ord-le-refl (f i)) ⟩
-              α ∙ (β ∙ h k) + α ∙ g j + f i ≤⟨ proj₁ (assoc (α ∙ (β ∙ h k)) (α ∙ g j) (f i)) ⟩
-              α ∙ (β ∙ h k) + (α ∙ g j + f i) ≤⟨ +-mono-≤ (lem₂ α β (h k)) (ord-le-refl (α ∙ g j + f i)) ⟩
-              α ∙ β ∙ h k + (α ∙ g j + f i) ∎)
-     where
-       open import Relation.Binary.PartialOrderReasoning ≤-poset
-       open IsMonoid +-isMonoid
+     α ∙  β ∙ h k  + (α ∙ g j + f i)
+        ≈⟨ ∙-cong (self α β (h k)) (reflexive {(α ∙ g j + f i) } _≡_.refl) ⟩
+     α ∙ (β ∙ h k) + (α ∙ g j + f i)
+        ≈⟨ sym (assoc (α ∙ (β ∙ h k)) (α ∙ g j) (f i)) ⟩
+     α ∙ (β ∙ h k) + α ∙ g j + f i
+        ≈⟨ ∙-cong (sym (+-∙-dist α (β ∙ h k) (g j))) (reflexive {f i} _≡_.refl) ⟩
+     α ∙ (β ∙ h k + g j) + f i ∎ }
 
 
 IsSemigroup.∙-cong (IsMonoid.isSemigroup ∙-isMonoid)
@@ -197,20 +193,13 @@ IsMonoid.identity ∙-isMonoid = (λ α → lem₁ α , lem₂ α) , (λ α → 
     lem₄ : ∀ α → α ∙ one ≥ α
     lem₄ α@(limit f) i = (i , _) ,
        (begin f i ≤⟨ proj₂ (proj₁ identity (f i)) ⟩
-              zero + f i ≤⟨ +-mono-≤ (zero-least (α ∙ zero)) (ord-le-refl (f i)) ⟩ α ∙ zero + f i ∎)
+              zero + f i ≤⟨ +-mono-≤ (zero-least (α ∙ zero)) (ord-le-refl (f i)) ⟩
+              α ∙ zero + f i ∎)
 
 
 
 -- ^-+-dist : ∀ α β γ → (α ^ β) ^ γ ≈ α ^ (β ∙ γ)
--- ^-+-dist α β γ = lem₁ α β γ , lem₂ α β γ
---   where
---     lem₁ : ∀ α β γ → (α ^ β) ^ γ ≤ α ^ (β ∙ γ)
---     lem₁ α@(limit f) β@(limit g) γ@(limit h) (inj₁ i) = (inj₁ _) , (⊥-elim ∘ lower)
---     lem₁ α@(limit f) β@(limit g) γ@(limit h) (inj₂ (inj₁ i , j , k))  = inj₁ _ , {!!}
---     lem₁ α@(limit f) β@(limit g) γ@(limit h) (inj₂ (inj₂ i , j , k))  = {!!} , {!!}
--- 
---     lem₂ : ∀ α β γ → (α ^ β) ^ γ ≥ α ^ (β ∙ γ)
---     lem₂ α β γ = {!!}
+-- ^-+-dist α@(limit f) β@(limit g) γ@(limit h) =
 
 simple : ∀ {A : Set a} f (x : A) → f x < limit f
 simple f x rewrite ord-lt-unfold (f x) (limit f) = x , ord-le-refl _
@@ -240,3 +229,49 @@ lex₂ α@(limit f) β₁@(limit g₁) β₂@(limit g₂) γ₁@(limit h₁) γ�
 ∙-<-mono : ∀ {α β γ} → zero < α → β < γ → α ∙ β < α ∙ γ
 ∙-<-mono {limit f} {limit g} {limit h} (i , _) (j , g_≤hj) =
   (i , j) , (λ { (a , b) → lex₁ (limit f) (g b) (h j) (f a) (f i) (g b ≤hj) (simple f a) })
+
+
+open import Data.Nat using (ℕ) renaming (_+_ to _ℕ-+_)
+
++-suc-comm : ∀ x y → x + suc y ≈ suc (x + y)
++-suc-comm x y = ⊔-pick (ord-lt-le (, ≤-≤-trans (proj₂ (proj₂ identity x))
+                                   (+-mono-≤ (ord-le-refl x) (zero-least y))))
+  where
+    open IsMonoid +-isMonoid
+
+suc-cong : ∀ {α β} → α ≈ β → suc α ≈ suc β
+suc-cong eq = (λ i → , proj₁ eq) , (λ _ → , proj₂ eq)
+
+add : ∀ i j → ⌜ i ℕ-+ j ⌝ ≈ ⌜ i ⌝ + ⌜ j ⌝
+add x ℕ.zero = begin
+  ⌜ x ℕ-+ 0 ⌝ ≈⟨ reflexive (cong ⌜_⌝ (+-comm x 0)) ⟩
+  ⌜ x  ⌝ ≈⟨ sym (proj₂ identity ⌜ x ⌝) ⟩
+  ⌜ x ⌝ + ⌜ 0 ⌝ ∎
+  where
+    open import Relation.Binary.EqReasoning ≈-setoid
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Relation.Binary.PropositionalEquality using (cong; subst)
+    open import Algebra
+    open CommutativeSemiring commutativeSemiring using (+-comm)
+    open IsMonoid +-isMonoid
+
+add x (ℕ.suc y) =
+  begin ⌜ x ℕ-+ ℕ.suc y ⌝ ≈⟨ reflexive (cong ⌜_⌝ (+-comm x (ℕ.suc y))) ⟩
+        suc ⌜ y ℕ-+ x ⌝ ≈⟨ reflexive (cong (λ a₁ → suc ⌜ a₁ ⌝) (+-comm y x)) ⟩
+        suc ⌜ x ℕ-+ y ⌝ ≈⟨ suc-cong (add x y) ⟩
+        suc (⌜ x ⌝ + ⌜ y ⌝) ≈⟨ sym (+-suc-comm ⌜ x ⌝ ⌜ y ⌝) ⟩
+        ⌜ x ⌝ + ⌜ ℕ.suc y ⌝ ∎
+  where
+    open import Relation.Binary.EqReasoning ≈-setoid
+    open IsEquivalence ≈-isEquivalence
+    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Relation.Binary.PropositionalEquality using (cong; subst)
+    open import Algebra
+    open CommutativeSemiring commutativeSemiring using (+-comm)
+
+ω-dominates : ∀ i → ⌜ i ⌝ + ω ≤ ω
+ω-dominates ℕ.zero = proj₁ (proj₁ identity ω)
+  where
+    open IsMonoid +-isMonoid
+ω-dominates (ℕ.suc i) (inj₁ _) = lift i , ord-le-refl _
+ω-dominates (ℕ.suc i) (inj₂ (lift j)) = lift (ℕ.suc i ℕ-+ j) , proj₂ (add (ℕ.suc i) j)

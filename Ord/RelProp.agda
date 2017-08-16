@@ -8,6 +8,8 @@ open import Relation.Binary.PropositionalEquality
 open import Data.Product
 open import Induction.WellFounded
 open import Function
+open import Function.LeftInverse using (_↞_; module LeftInverse; _LeftInverseOf_)
+open import Function.Equality using (_⟨$⟩_)
 open import Ord.Base a
 
 
@@ -115,5 +117,26 @@ suc-step x = , ord-le-refl x
 zero-suc : ∀ x → zero < suc x
 zero-suc (limit x) = , zero-least _
 
-limit-cong : ∀ {A : Set a} {f g : A → Ord} → ((i : A) → f i ≈ g i) → limit f ≈ limit g
-limit-cong eq = (λ i → i , (proj₁ (eq i))) , (λ i → i , (proj₂ (eq i)))
+limit-cong :
+  ∀ {A B : Set a} {f : A → Ord} {g : B → Ord}
+  (inv : A ↞ B) →
+  ( (i : B) → f (LeftInverse.from inv ⟨$⟩ i) ≈ g i) →
+  limit f ≈ limit g
+limit-cong {A} {B} {f} {g} inv z = lem₁ , lem₂
+  where
+    open LeftInverse inv
+
+    lem₁ : limit f ≤ limit g
+    lem₁ i rewrite sym (left-inverse-of i) = , proj₁ (z (to ⟨$⟩ i))
+
+    lem₂ : limit f ≥ limit g
+    lem₂ i = , proj₂ (z i)
+
+mk-left-inverse :
+  ∀ {A B : Set a}
+  (f : A → B) (g : B → A) → ((x : A) → g (f x) ≡ x) →
+  A ↞ B
+mk-left-inverse f g i =
+  record { to = →-to-⟶ f ; from = →-to-⟶ g ; left-inverse-of = i }
+  where
+    open import Relation.Binary.PropositionalEquality using (→-to-⟶)

@@ -12,9 +12,11 @@ open import Ord.Arithmetic lvl
 open import Ord.Base lvl
 open import Ord.Nat lvl
 open import Ord.RelProp lvl
+open import Ord.Induction lvl
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 
+open import Induction
 open import Induction.WellFounded
 
 
@@ -43,20 +45,18 @@ ackermann (ℕ.suc m) (ℕ.suc n) (acc rs) = ackermann m n′ (rs _ (smaller m n
 
 ------------------------------------------------------------------------
 
-ackermann′ : (x y : ℕ) (fuel : Ord) → fuel ≡ sz x y → ℕ
-
-ackermann′ ℕ.zero n _ _ = ℕ.suc n
-
-ackermann′ (ℕ.suc m) ℕ.zero (limit f) refl =
-  let fuel = f (inj₁ (Level.lift 1 , _))
-  in ackermann′ m 1 fuel refl
-
-ackermann′ (ℕ.suc m) (ℕ.suc n) (limit f) refl =
-  let fuel₁ = f (inj₂ _)
-      n′    = ackermann′ (ℕ.suc m) n fuel₁ refl
-      fuel₂ = f (inj₁ (Level.lift n′ , _))
-  in ackermann′ m n′ fuel₂ refl
-
-
 ackermann-ords : ℕ → ℕ → ℕ
-ackermann-ords x y = ackermann′ x y (sz x y) refl
+ackermann-ords x y = build Ord-rec-builder P go (sz x y) x y refl
+  where
+    open import Relation.Unary
+    open import Level
+
+    P : Pred Ord _
+    P = λ o → (x y : ℕ) → o ≡ sz x y → ℕ
+
+    go : Ord-Rec _ P ⊆′ P
+    go o rec ℕ.zero y refl = ℕ.suc y
+    go o rec (ℕ.suc x) ℕ.zero refl = rec (inj₁ (lift 1 , _)) x 1 refl
+    go o rec (ℕ.suc x) (ℕ.suc y) refl =
+      let z = rec (inj₂ _) (ℕ.suc x) y refl
+      in rec (inj₁ (lift z , _)) x z refl

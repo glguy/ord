@@ -91,6 +91,8 @@ limit f ⊕ limit g =
       recʳ = limit λ j → limit f ⊕ g j
   in recˡ ⊔ recʳ
 
+⨆ : {A : Set a} → (A → Ord) → Ord
+⨆ f = limit λ { (i , j) → subord (f i) j }
 
 _+_ : Ord → Ord → Ord
 x + limit f = x ⊔ limit λ i → x + f i

@@ -9,7 +9,7 @@ has-maximum-sub = λ (o : Ord) → ∃ λ i → ∀ j → subord o i ≥ subord 
 accending-subs  = λ (o : Ord) → ∀ i → ∃ λ j → subord o i < subord o j
 
 pred : Ord → Ord
-pred o = limit λ { (i , j) → subord (subord o i) j }
+pred (limit f) = ⨆ f
 
 pred-most : ∀ x y → x < y → x ≤ pred y
 pred-most (limit f) (limit g) (j , limf<gj) i with limf<gj i
