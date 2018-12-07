@@ -22,7 +22,7 @@ small-nat i = lift i , ord-le-refl _
 
 ≤-nat : ∀ {x y} → x ℕ-≤ y → ⌜ x ⌝ ≤ ⌜ y ⌝
 ≤-nat z≤n = zero-least _
-≤-nat (s≤s le) _ = , ≤-nat le
+≤-nat (s≤s le) _ = _ , ≤-nat le
 
 <-nat : ∀ {x y} → x ℕ-< y → ⌜ x ⌝ < ⌜ y ⌝
-<-nat (s≤s lt) = , ≤-nat lt
+<-nat (s≤s lt) = _ , ≤-nat lt

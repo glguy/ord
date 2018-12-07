@@ -17,7 +17,7 @@ open import Algebra.Structures
 ≤-⊕-cong {limit f₁} {limit g₁} {limit f₂} {limit g₂} x≤y u≤v (inj₂ i)
   = let j , uᵢ≤vⱼ = u≤v i in inj₂ j , ≤-⊕-cong x≤y uᵢ≤vⱼ
 
-IsSemigroup.isEquivalence (IsCommutativeMonoid.isSemigroup ⊕-isCommutativeMonoid)
+IsMagma.isEquivalence (IsSemigroup.isMagma (IsCommutativeMonoid.isSemigroup ⊕-isCommutativeMonoid))
   = ≈-isEquivalence
 
 IsSemigroup.assoc (IsCommutativeMonoid.isSemigroup ⊕-isCommutativeMonoid) x y z
@@ -33,7 +33,7 @@ IsSemigroup.assoc (IsCommutativeMonoid.isSemigroup ⊕-isCommutativeMonoid) x y 
     lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₁ j)) = inj₁ (inj₂ j) , lem₂ (limit f) (g j) (limit h)
     lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₂ k)) = inj₂ k        , lem₂ (limit f) (limit g) (h k)
 
-IsSemigroup.∙-cong (IsCommutativeMonoid.isSemigroup ⊕-isCommutativeMonoid) (x≤y , y≤x) (u≤v , v≤u) = ≤-⊕-cong x≤y u≤v , ≤-⊕-cong y≤x v≤u
+IsMagma.∙-cong (IsSemigroup.isMagma (IsCommutativeMonoid.isSemigroup ⊕-isCommutativeMonoid)) (x≤y , y≤x) (u≤v , v≤u) = ≤-⊕-cong x≤y u≤v , ≤-⊕-cong y≤x v≤u
 
 IsCommutativeMonoid.identityˡ ⊕-isCommutativeMonoid x = lem₁ x , lem₂ x
   where
@@ -62,8 +62,8 @@ suc-⊕-comm : ∀ x y → suc x ⊕ y ≈ suc (x ⊕ y)
 suc-⊕-comm x y = lem₁ x y , lem₂ x y
   where
     lem₁ : ∀ x y → suc x ⊕ y ≤ suc (x ⊕ y)
-    lem₁ (limit f) (limit g) (inj₁ _) = , [ (λ i → inj₁ i , ord-le-refl _) , (λ i → inj₂ i , ord-le-refl _) ]
-    lem₁ (limit f) (limit g) (inj₂ i) = , ≤-≤-trans (lem₁ (limit f) (g i)) (λ _ → inj₂ i , ord-le-refl _)
+    lem₁ (limit f) (limit g) (inj₁ _) = _ , [ (λ i → inj₁ i , ord-le-refl _) , (λ i → inj₂ i , ord-le-refl _) ]
+    lem₁ (limit f) (limit g) (inj₂ i) = _ , ≤-≤-trans (lem₁ (limit f) (g i)) (λ _ → inj₂ i , ord-le-refl _)
 
     lem₂ : ∀ x y → suc x ⊕ y ≥ suc (x ⊕ y)
     lem₂ (limit f) (limit g) _ = inj₁ _ , [ (λ i → inj₁ i , ord-le-refl _) , (λ i → inj₂ i , ord-le-refl _) ]

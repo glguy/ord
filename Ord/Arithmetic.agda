@@ -29,7 +29,8 @@ open import Relation.Binary.PropositionalEquality using (_≡_)
 
 +-isMonoid : IsMonoid _≈_ _+_ zero
 
-IsSemigroup.isEquivalence (IsMonoid.isSemigroup +-isMonoid) = ≈-isEquivalence
+IsMagma.isEquivalence (IsSemigroup.isMagma (IsMonoid.isSemigroup +-isMonoid))
+  = ≈-isEquivalence
 
 IsSemigroup.assoc (IsMonoid.isSemigroup +-isMonoid) α β γ = lem₁ α β γ , lem₂ α β γ
   where
@@ -44,7 +45,7 @@ IsSemigroup.assoc (IsMonoid.isSemigroup +-isMonoid) α β γ = lem₁ α β γ ,
     lem₂ (limit f) (limit g) (limit h) (inj₂ (inj₂ i)) = inj₂ i , lem₂ _ _ (h i)
 
 
-IsSemigroup.∙-cong (IsMonoid.isSemigroup +-isMonoid)
+IsMagma.∙-cong (IsSemigroup.isMagma (IsMonoid.isSemigroup +-isMonoid))
   (x≤y , y≤x) (u≤v , v≤u) = +-mono-≤ x≤y u≤v , +-mono-≤ y≤x v≤u
 
 IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
@@ -114,13 +115,13 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
     open Setoid ≈-setoid
 
     0<1 : zero < one
-    0<1 = , zero-least _
+    0<1 = _ , zero-least _
 
     go : ∀ i → one + ⌜ i ⌝ ≤ ⌜ ℕ.suc i ⌝
-    go ℕ.zero (inj₁ _) = , zero-least _
+    go ℕ.zero (inj₁ _) = _ , zero-least _
     go ℕ.zero (inj₂ ())
-    go (ℕ.suc i) (inj₁ _) = , zero-least _
-    go (ℕ.suc i) (inj₂ _) = , go i
+    go (ℕ.suc i) (inj₁ _) = _ , zero-least _
+    go (ℕ.suc i) (inj₂ _) = _ , go i
 
     counter : one + ω ≤ ω
     counter (inj₁ _) = lift 0 , zero-least _
@@ -141,7 +142,8 @@ IsMonoid.identity +-isMonoid = +-identityˡ , +-identityʳ
 ∙-zeroʳ α@(limit f) (_ , lift ())
 
 ∙-isMonoid : IsMonoid _≈_ _∙_ one
-IsSemigroup.isEquivalence (IsMonoid.isSemigroup ∙-isMonoid) = ≈-isEquivalence
+IsMagma.isEquivalence (IsSemigroup.isMagma (IsMonoid.isSemigroup ∙-isMonoid))
+  = ≈-isEquivalence
 IsSemigroup.assoc         (IsMonoid.isSemigroup ∙-isMonoid) = self
   where
     open import Relation.Binary.EqReasoning ≈-setoid
@@ -164,7 +166,7 @@ IsSemigroup.assoc         (IsMonoid.isSemigroup ∙-isMonoid) = self
      α ∙ (β ∙ h k + g j) + f i ∎ }
 
 
-IsSemigroup.∙-cong (IsMonoid.isSemigroup ∙-isMonoid)
+IsMagma.∙-cong (IsSemigroup.isMagma (IsMonoid.isSemigroup ∙-isMonoid))
   (x≤y , y≤x) (u≤v , v≤u) = ∙-mono-≤ x≤y u≤v , ∙-mono-≤ y≤x v≤u
 
 IsMonoid.identity ∙-isMonoid = (λ α → lem₁ α , lem₂ α) , (λ α → lem₃ α , lem₄ α)
@@ -235,16 +237,16 @@ lex₂ α@(limit f) β₁@(limit g₁) β₂@(limit g₂) γ₁@(limit h₁) γ�
 open import Data.Nat using (ℕ) renaming (_+_ to _ℕ-+_)
 
 +-suc-comm : ∀ x y → x + suc y ≈ suc (x + y)
-+-suc-comm x y = ⊔-pick (ord-lt-le (, ≤-≤-trans (proj₂ (proj₂ identity x))
++-suc-comm x y = ⊔-pick (ord-lt-le (_ , ≤-≤-trans (proj₂ (proj₂ identity x))
                                    (+-mono-≤ (ord-le-refl x) (zero-least y))))
   where
     open IsMonoid +-isMonoid
 
 suc-cong : ∀ {α β} → α ≈ β → suc α ≈ suc β
-suc-cong (x , y) = (λ _ → , x) , (λ _ → , y)
+suc-cong (x , y) = (λ _ → _ , x) , (λ _ → _ , y)
 
 suc-mono : ∀ {α β} → α ≤ β → α < suc β
-suc-mono α≤β = , α≤β
+suc-mono α≤β = _ , α≤β
 
 add : ∀ i j → ⌜ i ℕ-+ j ⌝ ≈ ⌜ i ⌝ + ⌜ j ⌝
 add x ℕ.zero = begin
@@ -253,10 +255,10 @@ add x ℕ.zero = begin
   ⌜ x ⌝ + ⌜ 0 ⌝ ∎
   where
     open import Relation.Binary.EqReasoning ≈-setoid
-    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Data.Nat.Properties using (*-+-commutativeSemiring)
     open import Relation.Binary.PropositionalEquality using (cong; subst)
     open import Algebra
-    open CommutativeSemiring commutativeSemiring using (+-comm)
+    open CommutativeSemiring *-+-commutativeSemiring using (+-comm)
     open IsMonoid +-isMonoid
 
 add x (ℕ.suc y) =
@@ -268,10 +270,10 @@ add x (ℕ.suc y) =
   where
     open import Relation.Binary.EqReasoning ≈-setoid
     open IsEquivalence ≈-isEquivalence
-    open import Data.Nat.Properties using (commutativeSemiring)
+    open import Data.Nat.Properties using (*-+-commutativeSemiring)
     open import Relation.Binary.PropositionalEquality using (cong; subst)
     open import Algebra
-    open CommutativeSemiring commutativeSemiring using (+-comm)
+    open CommutativeSemiring *-+-commutativeSemiring using (+-comm)
 
 ω-dominates : ∀ i → ⌜ i ⌝ + ω ≤ ω
 ω-dominates ℕ.zero = proj₁ (proj₁ identity ω)

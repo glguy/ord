@@ -28,11 +28,15 @@ open import Function.Inverse
 
 ⊔-isIdempotentCommutativeMonoid : IsIdempotentCommutativeMonoid _≈_ _⊔_ zero
 
-IsSemigroup.isEquivalence
-  (IsCommutativeMonoid.isSemigroup
-    (IsIdempotentCommutativeMonoid.isCommutativeMonoid
-      ⊔-isIdempotentCommutativeMonoid))
+IsMagma.isEquivalence
+    (IsSemigroup.isMagma
+       (IsCommutativeMonoid.isSemigroup
+          (IsIdempotentCommutativeMonoid.isCommutativeMonoid
+             ⊔-isIdempotentCommutativeMonoid)))
   = ≈-isEquivalence
+
+IsIdempotentCommutativeMonoid.idem ⊔-isIdempotentCommutativeMonoid
+  x = ⊔-pick (ord-le-refl x)
 
 IsSemigroup.assoc
   (IsCommutativeMonoid.isSemigroup
@@ -46,12 +50,6 @@ IsSemigroup.assoc
 
     ref : ∀ {A : Set a} (f : A → Ord) x → f x ≈ f x
     ref f x = refl
-
-IsSemigroup.∙-cong
-  (IsCommutativeMonoid.isSemigroup
-     (IsIdempotentCommutativeMonoid.isCommutativeMonoid
-       ⊔-isIdempotentCommutativeMonoid))
-  (x≤y , y≤x) (u≤v , v≤u) = ⊔-mono-≤ x≤y u≤v , ⊔-mono-≤ y≤x v≤u
 
 IsCommutativeMonoid.identityˡ
   (IsIdempotentCommutativeMonoid.isCommutativeMonoid
@@ -74,8 +72,13 @@ IsCommutativeMonoid.comm
     lem (limit f) (limit g) (inj₁ i) = inj₂ i , ord-le-refl (f i)
     lem (limit f) (limit g) (inj₂ i) = inj₁ i , ord-le-refl (g i)
 
-IsIdempotentCommutativeMonoid.idem ⊔-isIdempotentCommutativeMonoid
-  x = ⊔-pick (ord-le-refl x)
+
+IsMagma.∙-cong
+  (IsSemigroup.isMagma
+     (IsCommutativeMonoid.isSemigroup
+        (IsIdempotentCommutativeMonoid.isCommutativeMonoid
+           ⊔-isIdempotentCommutativeMonoid))) 
+  (x≤y , y≤x) (u≤v , v≤u) = ⊔-mono-≤ x≤y u≤v , ⊔-mono-≤ y≤x v≤u
 
 ------------------------------------------------------------------------
 
@@ -138,8 +141,6 @@ IsIdempotentCommutativeMonoid.idem ⊔-isIdempotentCommutativeMonoid
 
 ⊓-isSemigroup : IsSemigroup _≈_ _⊓_
 
-IsSemigroup.isEquivalence ⊓-isSemigroup = ≈-isEquivalence
-
 IsSemigroup.assoc ⊓-isSemigroup x y z = lem₁ x y z , lem₂ x y z
   where
     lem₁ : Associative _≤_ _⊓_
@@ -150,9 +151,11 @@ IsSemigroup.assoc ⊓-isSemigroup x y z = lem₁ x y z , lem₂ x y z
     lem₂ (limit f) (limit g) (limit h) (i , j , k)
       = ((i , j) , k) , lem₂ (f i) (g j) (h k)
 
-IsSemigroup.∙-cong ⊓-isSemigroup (x≤y , x≥y) (u≤v , u≥v)
-  = ⊓-mono-≤ x≤y u≤v , ⊓-mono-≤ x≥y u≥v
+IsMagma.isEquivalence (IsSemigroup.isMagma ⊓-isSemigroup) = ≈-isEquivalence
 
+
+IsMagma.∙-cong (IsSemigroup.isMagma ⊓-isSemigroup) (x≤y , x≥y) (u≤v , u≥v)
+  = ⊓-mono-≤ x≤y u≤v , ⊓-mono-≤ x≥y u≥v
 
 ------------------------------------------------------------------------
 

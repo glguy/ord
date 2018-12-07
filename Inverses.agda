@@ -19,8 +19,8 @@ left-inverse-of (inverse-of Σ-assoc) _ = refl
 right-inverse-of (inverse-of Σ-assoc) _ = refl
 
 ×-comm : ∀ {a b} {A : Set a} {B : Set b} → (A × B) ↔ (B × A)
-to ×-comm =  →-to-⟶ swap
-from ×-comm = →-to-⟶ swap
+to ×-comm =  →-to-⟶ Data.Product.swap
+from ×-comm = →-to-⟶ Data.Product.swap
 left-inverse-of (inverse-of ×-comm) _ = refl
 right-inverse-of (inverse-of ×-comm) _ = refl
 

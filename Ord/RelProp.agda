@@ -32,7 +32,7 @@ open import Ord.Base a
 
 ------------------------------------------------------------------------
 
-<-wf : Well-founded _<_
+<-wf : WellFounded _<_
 <-wf = accessible ∘ ord-le-refl
   where
     accessible : ∀ {x y} → x ≤ y → Acc _<_ x
@@ -42,7 +42,7 @@ open import Ord.Base a
         in accessible z≤yᵢ
 
 private
-  wf-irref : ∀ {a ℓ} {A : Set a} {R : Rel A ℓ} → Well-founded R → Irreflexive _≡_ R
+  wf-irref : ∀ {a ℓ} {A : Set a} {R : Rel A ℓ} → WellFounded R → Irreflexive _≡_ R
   wf-irref {R = R} wf {x} refl x<x = loop (wf x)
     where
       loop : ¬ Acc R x
@@ -112,10 +112,10 @@ suc-small : ∀ x y → x < y → suc x ≤ y
 suc-small x y x<y _ = x<y
 
 suc-step : ∀ x → x < suc x
-suc-step x = , ord-le-refl x
+suc-step x = _ , ord-le-refl x
 
 zero-suc : ∀ x → zero < suc x
-zero-suc (limit x) = , zero-least _
+zero-suc (limit x) = _ , zero-least _
 
 limit-cong :
   ∀ {A B : Set a} {f : A → Ord} {g : B → Ord}
@@ -127,10 +127,10 @@ limit-cong {A} {B} {f} {g} inv z = lem₁ , lem₂
     open LeftInverse inv
 
     lem₁ : limit f ≤ limit g
-    lem₁ i rewrite sym (left-inverse-of i) = , proj₁ (z (to ⟨$⟩ i))
+    lem₁ i rewrite sym (left-inverse-of i) = _ , proj₁ (z (to ⟨$⟩ i))
 
     lem₂ : limit f ≥ limit g
-    lem₂ i = , proj₂ (z i)
+    lem₂ i = _ , proj₂ (z i)
 
 mk-left-inverse :
   ∀ {A B : Set a}

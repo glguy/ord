@@ -6,7 +6,7 @@ open import Ord.RelProp a
 open import Data.Product
 
 has-maximum-sub = λ (o : Ord) → ∃ λ i → ∀ j → subord o i ≥ subord o j
-accending-subs  = λ (o : Ord) → ∀ i → ∃ λ j → subord o i < subord o j
+ascending-subs  = λ (o : Ord) → ∀ i → ∃ λ j → subord o i < subord o j
 
 pred : Ord → Ord
 pred (limit f) = ⨆ f
@@ -25,10 +25,10 @@ pred-smaller (limit f) (i , max) =
 pred-≤ : (o : Ord) → pred o ≤ o
 pred-≤ (limit f) (i , j) = i , ord-lt-le (subord-smaller (f i) j)
 
-pred-≥ : (o : Ord) → accending-subs o → pred o ≥ o
+pred-≥ : (o : Ord) → ascending-subs o → pred o ≥ o
 pred-≥ (limit f) asc i with asc i
 ... | y , z rewrite ord-lt-unfold (f i) (f y) = (y , proj₁ z) , proj₂ z
 
-pred-≈ : (o : Ord) → accending-subs o → pred o ≈ o
+pred-≈ : (o : Ord) → ascending-subs o → pred o ≈ o
 pred-≈ o asc = pred-≤ o , pred-≥ o asc
 

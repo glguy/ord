@@ -74,7 +74,7 @@ zero : Ord
 zero = limit (⊥-elim ∘ lower)
 
 suc : Ord → Ord
-suc x = limit {Lift ⊤} λ _ → x
+suc x = limit {Lift _ ⊤} λ _ → x
 
 -- Least upper bound
 _⊔_ : Ord → Ord → Ord
@@ -82,7 +82,7 @@ limit f ⊔ limit g = limit [ f , g ]
 
 -- greatest lower bound
 _⊓_ : Ord → Ord → Ord
-limit f ⊓ limit g = limit λ { (i , j) → f i ⊓ g j }
+limit {a} f ⊓ limit {b} g = limit {a × b} λ { (i , j) → f i ⊓ g j }
 
 -- Natural addition
 _⊕_ : Ord → Ord → Ord
@@ -92,16 +92,16 @@ limit f ⊕ limit g =
   in recˡ ⊔ recʳ
 
 ⨆ : {A : Set a} → (A → Ord) → Ord
-⨆ f = limit λ { (i , j) → subord (f i) j }
+⨆ {A} f = limit {Σ A _} λ { (i , j) → subord (f i) j }
 
 _+_ : Ord → Ord → Ord
 x + limit f = x ⊔ limit λ i → x + f i
 
 _∙_ : Ord → Ord → Ord
-limit f ∙ limit g = limit λ { (i , j) → limit f ∙ g j + f i }
+limit {A} f ∙ limit g = limit {Σ A _} λ { (i , j) → limit f ∙ g j + f i }
 
 _^_ : Ord → Ord → Ord
-limit f ^ limit g = suc zero ⊔ limit
+limit {A} f ^ limit {B} g = suc zero ⊔ limit {Σ A λ a → Σ B λ b → _ }
   λ { (i , j , k) →
          let
            γ = f i
